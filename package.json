@@ -1,0 +1,31 @@
+{
+  "name": "wicso-mapper",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "vitest run",
+    "test:browser": "node tests/browser.mjs",
+    "test:portability": "node tests/portability.mjs",
+    "test:mapping": "node tests/mapping.mjs"
+  },
+  "dependencies": {
+    "@zip.js/zip.js": "^2.24.0",
+    "leaflet": "^1.9.4",
+    "lucide": "^1.59.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@sparticuz/chromium": "^153.0.0",
+    "@types/leaflet": "^1.9.15",
+    "typescript": "^5.7.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
