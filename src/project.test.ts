@@ -69,7 +69,7 @@ describe('portable ZIP format v1',()=>{
     const w=new ZipWriter(new BlobWriter(),{useWebWorkers:false});
     for(const [name,value] of Object.entries({'manifest.json':p.manifest,'world.json':p.world,'history.json':p.history})) await w.add(name,new TextReader(JSON.stringify(value)));
     await expect(readProject(await w.close())).rejects.toThrow('artwork is missing');
-    await expect(readProject(await archive({'manifest.json':JSON.stringify({...p.manifest,format:'other'})}))).rejects.toThrow('not a WICSO');
+    await expect(readProject(await archive({'manifest.json':JSON.stringify({...p.manifest,format:'other'})}))).rejects.toThrow('not a WicsoX');
   });
   it('rejects files that are not ZIPs',async()=>{await expect(readProject(new Blob(['broken zip']))).rejects.toThrow();});
 });

@@ -21,12 +21,24 @@ Choose BSD-3-Clause zip.js for worker/stream support and Zip64 rather than synch
 6. History/reliability: snapshots, restore backups, compare, undo/redo, recovery.
 7. Deployment/mobile: verify Pages Git builds/previews, device performance, Android packaging.
 
-Milestones 1 and 2 are implemented; territory tracing and dossier editing are now available (see MAPPING.md). See PROJECT_FORMAT.md for the actual implemented contract and limits; future entity schemas remain proposals. Split/merge, full history, browser autosave, APK and actual Cloudflare deployment remain unimplemented. Territory vectors use a small native Leaflet editing controller rather than introducing Geoman or paid geometry tools. zip.js is bundled locally; reads use bounded streams with workers disabled for predictable packaging. Future optimization can move large processing into workers.
+Milestones 1 and 2 are implemented; territory tracing and dossier editing are now available (see MAPPING.md). See PROJECT_FORMAT.md for the actual implemented contract and limits; future entity schemas remain proposals. Split/merge, full history, browser autosave, APK and actual Netlify deployment remain unimplemented.
+
+## Interface shell (v0.4.0)
+
+The interface is hand-written markup in `src/main.ts` plus one stylesheet, `src/style.css`; no CSS framework, no component library and no runtime theme package. Lucide icons are bundled locally and rendered inline, as before.
+
+Theme tokens are CSS custom properties on `:root`, overridden by `:root[data-theme="light"]`; `color-scheme` is set per theme so native controls and scrollbars match. Only `data-theme` on `<html>` changes between themes, so every component rule is written once against tokens. A short inline script in `index.html` applies the stored preference before first paint to avoid a flash; `localStorage` is the preference store and `prefers-color-scheme` is the fallback. Theme state is cosmetic only and is never written into a project ZIP.
+
+The layout is a single flex column (`#app` → top bar, shell, footer) with the shell splitting into a rail and the canvas. Floating canvas furniture (details card, zoom controls, territory editing bar) is absolutely positioned inside `.canvas-area`; the audit in TESTING.md checks that they do not overlap at desktop, laptop and phone widths. The rebuild deliberately preserved every element id, status string and accessible name so the existing Playwright suites needed no changes. Territory vectors use a small native Leaflet editing controller rather than introducing Geoman or paid geometry tools. zip.js is bundled locally; reads use bounded streams with workers disabled for predictable packaging. Future optimization can move large processing into workers.
 
 ## Official research sources
-- https://developers.cloudflare.com/pages/configuration/git-integration/ — GitHub/GitLab automatic deployment on push.
-- https://developers.cloudflare.com/pages/configuration/build-configuration/ — build command/output directory.
-- https://developers.cloudflare.com/pages/platform/limits/ — free: 500 builds/month, one concurrent build, 20 minute timeout, 20,000 files, 25 MiB asset limit. User maps are local, not deployed assets.
+- https://docs.netlify.com/start/quickstarts/deploy-from-repository/ — import an existing GitHub/GitLab/Bitbucket repository, continuous deployment on push, and where to add a custom domain.
+- https://docs.netlify.com/build/configure-builds/overview/ — build command, publish directory, base directory, deploy-log visibility.
+- https://docs.netlify.com/build/configure-builds/file-based-configuration/ — `netlify.toml`; file settings override the same fields in the Netlify UI, so a fork rebuilds identically.
+- https://docs.netlify.com/manage/domains/get-started-with-domains/ — register a domain with Netlify or bring your own, then choose Netlify DNS or external DNS (Netlify recommends `www` as primary with external DNS).
+- https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/how-credits-work/ — Free plan: 300 credits/month with a hard limit; 15 credits per production deploy, 20 per GB bandwidth, 2 per 10,000 requests, 10 per GB-hour compute; Deploy Previews and branch deploys are free; build minutes are not metered separately.
+- https://docs.netlify.com/build/configure-builds/manage-dependencies/ — Node.js version selection via `NODE_VERSION`, `.nvmrc` or `.node-version`; npm/pnpm/yarn detection.
+- https://docs.netlify.com/manage/routing/headers/ — custom response headers via `_headers` or `netlify.toml` `[[headers]]`. User maps are local files in the browser, not deployed assets, so they are not governed by any hosting asset cap.
 - https://docs.github.com/en/get-started/using-git/about-git — commits/branches track revisions; main is intended production, feature branches isolated.
 - https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository — version tags, release notes and binary assets for future signed APKs.
 - https://developer.mozilla.org/en-US/docs/Web/API/File — picker/drop File is a Blob; object URLs and createImageBitmap.

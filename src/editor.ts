@@ -98,7 +98,7 @@ export class MappingEditor {
   private finish(){
     try{const p=this.project()!;validatePolygon(this.draft,p.manifest.artwork.width,p.manifest.artwork.height);const points=structuredClone(this.draft!);const old=this.state().territories.find(t=>t.id===this.editingId);if(old){this.commit(updateTerritory(this.state(),{...old,points}));this.cancel();this.status('Boundary saved · download a ZIP to keep');}else {this.cancel();this.territoryForm(undefined,points);}}catch(e){this.status((e as Error).message);}
   }
-  private modal(title:string,body:string){this.formDirty=false;this.releaseUrls();this.dialog.innerHTML=`<button type="button" class="entity-close icon-button" aria-label="Close records">×</button><span class="eyebrow">WICSO · WORLD RECORDS</span><h2>${esc(title)}</h2><div class="entity-error" role="alert"></div>${body}`;this.dialog.querySelector<HTMLButtonElement>('.entity-close')!.onclick=()=>this.dialog.close();if(!this.dialog.open)this.dialog.showModal();}
+  private modal(title:string,body:string){this.formDirty=false;this.releaseUrls();this.dialog.innerHTML=`<button type="button" class="entity-close icon-button" aria-label="Close records">×</button><span class="eyebrow">WICSOX · RECORDS</span><h2>${esc(title)}</h2><div class="entity-error" role="alert"></div>${body}`;this.dialog.querySelector<HTMLButtonElement>('.entity-close')!.onclick=()=>this.dialog.close();if(!this.dialog.open)this.dialog.showModal();}
   private error(e:unknown){this.dialog.querySelector('.entity-error')!.textContent=(e as Error).message;}
   directory(){
     if(!this.project()||this.busy())return;

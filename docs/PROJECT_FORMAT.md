@@ -1,4 +1,4 @@
-# WICSO portable project format — v1
+# WicsoX portable project format — v1
 
 Implemented in the v0.2.0 portability release. A self-contained ZIP, with no server dependencies or application credentials.
 

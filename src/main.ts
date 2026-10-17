@@ -1,27 +1,94 @@
 import L from 'leaflet';
 import { MappingEditor } from './editor';
 import { getMapping } from './entities';
-import { createIcons, Orbit, ShieldCheck, CircleHelp, FolderOpen, ImagePlus, Package, Map, Flag, Swords, Route, History, Image, Eye, LockKeyhole, Sprout, ArrowUpRight, Hand, Scan, Upload, ArrowRight, Minus, Plus, SlidersHorizontal, Layers2, Download, Lightbulb, Mouse, X, Check, EyeOff } from 'lucide';
-const icons = { Orbit, ShieldCheck, CircleHelp, FolderOpen, ImagePlus, Package, Map, Flag, Swords, Route, History, Image, Eye, LockKeyhole, Sprout, ArrowUpRight, Hand, Scan, Upload, ArrowRight, Minus, Plus, SlidersHorizontal, Layers2, Download, Lightbulb, Mouse, X, Check, EyeOff };
+import { createIcons, ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon } from 'lucide';
+const icons = { ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon };
 import 'leaflet/dist/leaflet.css';
 import './style.css';
 import { validateFile, validateDimensions, validateRaster } from './image';
 import { newProject, readProject, writeProject, type Project, type JsonObject } from './project';
 const icon = (name: string, cls = '') => `<i data-lucide="${name}" class="${cls}"></i>`;
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<header class="topbar"><a class="brand" href="./" aria-label="WICSO Mapper home"><span class="brandmark">${icon('orbit')}</span><span>WICSO<span class="brand-light"> MAPPER</span></span><span class="beta">ALPHA</span></a><div class="header-right"><span class="private">${icon('shield-check')} Local-first. Yours to keep.</span><button id="guide" class="quiet">${icon('circle-help')} <span>Quick guide</span></button><span class="avatar">W</span></div></header>
-<div class="projectbar"><div class="project-name">${icon('folder-open')}<div><h1 id="project-title">Untitled world</h1><span id="project-subtitle">A new world starts with your map</span></div><button class="session" id="edit-project" disabled title="Edit project name and notes">PROJECT DETAILS</button></div><div class="project-actions"><button id="import-top" class="button">${icon('image-plus')} Import map</button><button id="open-project" class="button">${icon('folder-open')} Open ZIP</button><button id="save-project" class="button primary" disabled>${icon('package')} Save ZIP</button></div></div>
-<div class="workspace"><aside class="sidebar"><div class="side-heading"><span>WORKSPACE</span><span class="version">01</span></div><button class="nav-item active">${icon('map')} Map canvas <span class="nav-dot"></span></button><button class="nav-item" id="countries" disabled>${icon('flag')} Countries & regions</button><button class="nav-item future" data-feature="Military mapping">${icon('swords')} War room <span class="soon">SOON</span></button><button class="nav-item future" data-feature="Infrastructure networks">${icon('route')} Infrastructure <span class="soon">SOON</span></button><button class="nav-item future" data-feature="Historical snapshots">${icon('history')} Timeline <span class="soon">SOON</span></button>
-<div class="layers-title"><h2>Layers</h2><span class="count">1</span></div><div class="layer"><span class="layer-icon">${icon('image')}</span><div><strong>Original artwork</strong><small>Locked background</small></div><button id="visibility" class="icon-button" aria-label="Hide original artwork" disabled>${icon('eye')}</button>${icon('lock-keyhole','lock')}</div><p class="layer-note">Your original map is never modified.</p><div class="sidebar-bottom"><div class="foundation">${icon('sprout')} <span>Built for your worlds.</span></div><p>No accounts. No cloud required.<br>Just your maps, on your device.</p><a href="https://github.com/Alextheplayer919/Wicso-X" target="_blank" rel="noopener">View project on GitHub ${icon('arrow-up-right')}</a></div></aside>
-<main class="canvas-area"><div class="canvas-top"><div><span class="canvas-label">MAP CANVAS</span><span class="separator">/</span><span id="canvas-name">No map loaded</span></div><span class="artwork-badge">${icon('lock-keyhole')} Non-destructive workspace</span></div><div id="map" aria-label="Interactive map canvas" tabindex="0"></div><div class="canvas-grain"></div>
-<div class="tools" aria-label="Map tools"><button class="tool selected" id="pan" aria-label="Pan map" title="Pan map">${icon('hand')}</button><div class="tool-divider"></div><button class="tool" id="import-tool" aria-label="Import artwork" title="Import artwork">${icon('image-plus')}</button><button class="tool" id="fit-tool" aria-label="Fit map to screen" title="Fit map (F)" disabled>${icon('scan')}</button></div>
-<section class="welcome" id="welcome"><div class="eyebrow"><span></span> YOUR WORLD. YOUR STORY.</div><h2>A place for worlds<br>worth <em>documenting.</em></h2><p>Bring your map. Build its story.<br>A local-first workspace for fictional worlds,<br>alternate histories, and everything in between.</p><div class="dropzone" id="dropzone"><div class="upload-symbol">${icon('map')}</div><h3>Start with your map</h3><p>Drop your artwork here, or choose a file</p><button class="button primary" id="import-main">${icon('upload')} Import map image ${icon('arrow-right')}</button><span class="file-types">PNG, JPG, WEBP <span>·</span> Up to 100 MB</span></div><button id="open-welcome" class="open-welcome">Already have a world? Open a project ZIP ${icon('arrow-right')}</button><div class="welcome-foot">${icon('shield-check')} Your files stay on your device. Always.</div></section>
-<div class="map-info" id="map-info" hidden><span class="info-icon">${icon('image')}</span><div><strong id="file-name"></strong><small id="file-dimensions"></small></div><span class="original-tag">ORIGINAL</span></div><div class="view-controls"><button id="zoom-out" aria-label="Zoom out" disabled>${icon('minus')}</button><span id="zoom-level">—</span><button id="zoom-in" aria-label="Zoom in" disabled>${icon('plus')}</button><span class="control-divider"></span><button id="fit" aria-label="Fit map" title="Fit to screen (F)" disabled>${icon('scan')}</button><button id="actual" aria-label="Original scale" title="Original scale (1)" disabled>1:1</button></div><div id="drop-overlay" hidden>${icon('image-plus')}<h2>Drop your map to import</h2><p>Original artwork stays untouched</p></div>
-</main><aside class="inspector"><div class="side-heading"><span>MAP DETAILS</span>${icon('sliders-horizontal')}</div><div class="inspector-empty" id="details-empty"><span class="details-illustration">${icon('layers-2')}</span><h3>A foundation for your world</h3><p>Import your artwork to see its<br>details and get started.</p></div><div id="details-loaded" hidden><div class="loaded-preview">${icon('image')}</div><h3>Original artwork</h3><dl><dt>Dimensions</dt><dd id="detail-size"></dd><dt>File size</dt><dd id="detail-bytes"></dd><dt>Format</dt><dd id="detail-format"></dd><dt>Background</dt><dd>Locked & preserved</dd></dl><button class="button" id="download">${icon('download')} Download original</button></div><div class="tip"><span>${icon('lightbulb')} A LITTLE GUIDANCE</span><p>Already made a map in ibis Paint or another drawing app? Export it as a PNG and bring it right here.</p></div><div class="next"><span class="tiny-label">THE ROAD AHEAD</span><h3>Every world has layers.</h3><p>Territories, country dossiers, front lines, and history. One foundation at a time.</p><button id="milestones">Explore the roadmap ${icon('arrow-right')}</button></div></aside></div>
-<footer><span><i class="status-dot"></i><span id="status" role="status">Ready to import your map</span></span><span class="footer-center">${icon('mouse')} Drag to pan <b>·</b> Scroll to zoom <b>·</b> <kbd>F</kbd> Fit map</span><span>Mapping release <span class="footer-version">v0.3.0</span></span></footer>
-<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSO MAPPER</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it ${icon('check')}</button></dialog><div id="toast" role="alert" hidden></div>`;
+<header class="topbar">
+  <a class="brand" href="./" aria-label="WicsoX home"><span class="brand-mark">W</span><span class="brand-name">Wicso<em>X</em></span></a>
+  <button id="edit-project" class="project" disabled title="Edit project name and notes">
+    <span id="project-title">Untitled world</span>
+    <span id="project-subtitle">A new world starts with your map</span>
+  </button>
+  <div class="topbar-actions">
+    <button id="import-top" class="action">${icon('image-plus')}<span>Import</span></button>
+    <button id="open-project" class="action">${icon('folder-open')}<span>Open</span></button>
+    <button id="save-project" class="action primary" disabled>${icon('package')}<span>Save</span></button>
+    <span class="topbar-divider"></span>
+    <button id="theme-toggle" class="icon" aria-label="Switch colour theme" title="Switch theme">${icon('sun')}</button>
+    <button id="guide" class="action">${icon('circle-help')}<span>Quick guide</span></button>
+  </div>
+</header>
+<div class="shell">
+  <nav class="rail" aria-label="Map tools">
+    <button id="import-tool" class="rail-button" aria-label="Import artwork" title="Import artwork">${icon('image-plus')}</button>
+    <button id="fit-tool" class="rail-button" aria-label="Fit map to screen" title="Fit map (F)" disabled>${icon('scan')}</button>
+    <span class="rail-divider"></span>
+    <button id="visibility" class="rail-button" aria-label="Hide original artwork" title="Toggle artwork" disabled>${icon('eye')}</button>
+    <button id="countries" class="rail-button" aria-label="Countries & regions" title="Countries & regions" disabled>${icon('flag')}</button>
+    <span class="rail-spacer"></span>
+    <a class="rail-button" href="https://github.com/Alextheplayer919/Wicso-X" target="_blank" rel="noopener" aria-label="View project on GitHub" title="GitHub">${icon('arrow-up-right')}</a>
+  </nav>
+  <main class="canvas-area">
+    <div id="map" aria-label="Interactive map canvas" tabindex="0"></div>
+    <section class="welcome" id="welcome">
+      <h2>Bring your map.</h2>
+      <p>A local-first workspace for worlds you draw elsewhere.</p>
+      <div class="dropzone" id="dropzone">
+        <span class="drop-mark">${icon('map')}</span>
+        <h3>Start with your map</h3>
+        <button class="button primary" id="import-main">${icon('upload')} Import map image</button>
+        <small>PNG · JPG · WEBP — up to 100 MB</small>
+      </div>
+      <button id="open-welcome" class="link">Open a project ZIP</button>
+    </section>
+    <aside class="info-card" id="map-info" hidden>
+      <div id="details-empty"><h3>No map loaded</h3><p>Import artwork to see its details.</p></div>
+      <div id="details-loaded">
+        <strong id="file-name"></strong>
+        <small id="file-dimensions"></small>
+        <dl>
+          <div><dt>Dimensions</dt><dd id="detail-size"></dd></div>
+          <div><dt>File size</dt><dd id="detail-bytes"></dd></div>
+          <div><dt>Format</dt><dd id="detail-format"></dd></div>
+          <div><dt>Source</dt><dd>Locked &amp; preserved</dd></div>
+        </dl>
+        <button class="button" id="download">${icon('download')} Download original</button>
+      </div>
+    </aside>
+    <div class="view-controls">
+      <button id="zoom-out" aria-label="Zoom out" disabled>${icon('minus')}</button>
+      <span id="zoom-level">—</span>
+      <button id="zoom-in" aria-label="Zoom in" disabled>${icon('plus')}</button>
+      <span class="control-divider"></span>
+      <button id="fit" aria-label="Fit map" title="Fit to screen (F)" disabled>${icon('scan')}</button>
+      <button id="actual" aria-label="Original scale" title="Original scale (1)" disabled>1:1</button>
+    </div>
+    <div id="drop-overlay" hidden><span>${icon('image-plus')}</span><h2>Drop your map to import</h2><p>Original artwork stays untouched</p></div>
+  </main>
+</div>
+<footer>
+  <span class="footer-left"><i class="status-dot"></i><span id="status" role="status">Ready to import your map</span><b>·</b><span id="canvas-name">No map loaded</span></span>
+  <span class="footer-right"><span class="hints">Drag to pan <b>·</b> Scroll to zoom <b>·</b> <kbd>F</kbd> fit</span><button id="milestones" class="link">Roadmap</button><span class="footer-version">v0.4.0</span></span>
+</footer>
+<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSOX</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it</button></dialog><div id="toast" role="alert" hidden></div>`;
 createIcons({ icons });
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+const store = { get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } } };
+let theme: 'dark' | 'light' = store.get('wicsox-theme') === 'light' ? 'light' : store.get('wicsox-theme') === 'dark' ? 'dark' : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+function applyTheme(next: 'dark' | 'light') {
+  theme = next; document.documentElement.dataset.theme = next;
+  $('theme-toggle').innerHTML = icon(next === 'dark' ? 'sun' : 'moon');
+  $('theme-toggle').setAttribute('aria-label', next === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+  createIcons({ icons });
+}
+applyTheme(theme);
+$('theme-toggle').onclick = () => { applyTheme(theme === 'dark' ? 'light' : 'dark'); store.set('wicsox-theme', theme); };
 const map = L.map('map', { crs: L.CRS.Simple, zoomControl: false, attributionControl: false, minZoom: -8, maxZoom: 4, zoomSnap: 0, zoomDelta: .5 }).setView([0, 0], 0);
 let current: { file: File; url: string; width: number; height: number; overlay: L.ImageOverlay; bounds: L.LatLngBounds } | undefined;
 let project: Project | undefined;
@@ -31,16 +98,15 @@ let shown = true;
 const editor = new MappingEditor(map, () => project, () => { dirty = true; updateSavedLabel(); }, () => loading);
 const dialog = $('dialog') as HTMLDialogElement;
 function info(title: string, body: string) { $('dialog-title').textContent = title; $('dialog-body').innerHTML = body; if (!dialog.open) dialog.showModal(); }
-$('guide').onclick = () => info('Your map. A fresh perspective.', '<p>Import a PNG, JPEG, or WebP you created elsewhere. Drag with your mouse or one finger to pan; scroll or pinch to zoom.</p><p>Use <b>F</b> to fit the full map, <b>1</b> for original scale, and <b>+</b> / <b>−</b> to zoom. The eye in Layers hides or shows the artwork.</p><p>Use Save ZIP to download a complete portable project. Open that ZIP to restore artwork, project name, notes, visibility, and view. Browser memory is temporary, not an autosave. Before replacing a loaded project, a backup ZIP is downloaded. Use Trace territory to place at least three points, then Finish trace. Countries & regions opens dossiers and territory records. Edit boundary lets you drag vertices or insert/remove points. Undo/redo covers mapping edits in this session; save a ZIP to keep them.</p>');
-const roadmap = () => info('A reliable foundation, first.', '<ol class="roadmap-list"><li><b>01 · Foundation — available now</b><br>Local image import, zoom, pan, and original artwork preservation.</li><li><b>02 · Portable projects — available now</b><br>Validated ZIP import/export and data-integrity tests.</li><li><b>03 · Territories & profiles — tracing & dossiers available</b><br>Trace boundaries, assign countries, and create dossiers.</li><li><b>04–05 · War & infrastructure</b><br>Independent front lines, markers, and connected networks.</li><li><b>06–07 · History & mobile</b><br>Snapshots, recovery, deployment verification, and Android evaluation.</li></ol><p>Territory tracing, vertex editing, and country dossiers are available. Split/merge tools and browser autosave are not included yet. Download a ZIP to keep your work.</p>');
+$('guide').onclick = () => info('WicsoX in one minute', '<p>Import a PNG, JPEG, or WebP you created elsewhere. Drag with your mouse or one finger to pan; scroll or pinch to zoom.</p><p>The left rail holds import, fit, artwork visibility and <b>Countries &amp; regions</b>. Use <b>F</b> to fit the map, <b>1</b> for original scale, and <b>+</b> / <b>−</b> to zoom.</p><p>Use <b>Save</b> to download a complete portable project ZIP; <b>Open</b> restores artwork, name, notes, visibility and view. Browser memory is temporary, not an autosave: before replacing a loaded project a backup ZIP is downloaded. <b>Trace territory</b> places at least three points, then <b>Finish trace</b>; <b>Edit boundary</b> lets you drag, insert or remove vertices. Undo/redo covers mapping edits in this session.</p>');
+const roadmap = () => info('Roadmap', '<ol class="roadmap-list"><li><b>01 · Foundation — available now</b><br>Local image import, zoom, pan, and original artwork preservation.</li><li><b>02 · Portable projects — available now</b><br>Validated ZIP import/export and data-integrity tests.</li><li><b>03 · Territories & dossiers — tracing available</b><br>Trace boundaries, assign countries, and keep dossiers.</li><li><b>04–05 · War room & infrastructure</b><br>Independent front lines, markers, and connected networks.</li><li><b>06–07 · History & mobile</b><br>Snapshots, recovery, deployment verification, and Android packaging.</li></ol><p>Split/merge, multipolygon holes, nested subdivisions, military and infrastructure editors, browser autosave and an Android build are not implemented yet. Download a ZIP to keep your work.</p>');
 $('milestones').onclick = roadmap;
-document.querySelectorAll<HTMLButtonElement>('.future').forEach(b => b.onclick = () => info(`${b.dataset.feature} is on the roadmap`, '<p>This tool is not available in the foundation release. Start by importing and exploring your original map.</p><p>Portable ZIP saving is available now. Country dossiers and territory tracing are available now. War and infrastructure editors will follow later.</p>'));
 document.querySelectorAll<HTMLButtonElement>('.dialog-close,.dialog-done').forEach(b => b.onclick = () => dialog.close());
 const input = $('file-input') as HTMLInputElement;
 for (const id of ['import-top', 'import-main', 'import-tool']) $(id).onclick = () => input.click();
 let toastTimer: ReturnType<typeof setTimeout>;
 function notify(text: string) { $('toast').textContent = text; $('toast').hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => $('toast').hidden = true, 7000); }
-function fit() { if (current) map.fitBounds(current.bounds, { padding: [45, 45], animate: false }); }
+function fit() { if (current) { map.fitBounds(current.bounds, { padding: [24, 24], animate: false }); updateZoomLabel(); } }
 function downloadBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob); const a = document.createElement('a');
   a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 60000);
@@ -54,7 +120,7 @@ function captureProject() {
   return project;
 }
 function projectFilename(backup = false) {
-  return `${(project?.manifest.name || 'WICSO_World').replace(/[^a-zA-Z0-9 _-]/g, '_').slice(0,80)}${backup ? '-backup-' + Date.now() : ''}.zip`;
+  return `${(project?.manifest.name || 'WicsoX_World').replace(/[^a-zA-Z0-9 _-]/g, '_').slice(0,80)}${backup ? '-backup-' + Date.now() : ''}.zip`;
 }
 function updateSavedLabel() { $('project-subtitle').textContent = dirty ? 'Unsaved changes · download a ZIP to keep' : 'ZIP saved/opened · browser memory is temporary'; }
 async function backupBeforeReplace() {
@@ -74,7 +140,7 @@ async function showProject(next: Project, file: File, url: string, width: number
   $('welcome').hidden = true; $('map-info').hidden = false; $('details-empty').hidden = true; $('details-loaded').hidden = false;
   $('project-title').textContent = next.manifest.name;
   $('canvas-name').textContent = file.name; $('file-name').textContent = file.name;
-  $('file-dimensions').textContent = `${width.toLocaleString()} × ${height.toLocaleString()} px · Locked background`;
+  $('file-dimensions').textContent = `${width.toLocaleString()} × ${height.toLocaleString()} px · locked background`;
   $('detail-size').textContent = `${width.toLocaleString()} × ${height.toLocaleString()} px`;
   $('detail-bytes').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
   $('detail-format').textContent = file.name.split('.').pop()!.toUpperCase();
@@ -84,7 +150,7 @@ async function showProject(next: Project, file: File, url: string, width: number
   if (view) map.setView(view.center, view.zoom, { animate: false }); else fit();
   editor.reset();
   dirty = !fromZip; updateSavedLabel();
-  $('zoom-level').textContent = `${Math.round(2 ** map.getZoom() * 100)}%`;
+  updateZoomLabel();
   $('status').textContent = fromZip ? 'Project opened · artwork and data restored' : 'Map loaded · original artwork preserved';
   if (fromZip) notify('Project restored, including supported territories and dossiers. Legacy or unrecognized entity data is retained unchanged, not rendered.');
 }
@@ -161,14 +227,15 @@ input.onchange = () => { if (input.files?.[0]) void importFile(input.files[0]); 
 $('download').onclick = () => { if (!current) return; const a = document.createElement('a'); a.href = current.url; a.download = current.file.name; a.click(); };
 function updateVisibility() { $('visibility').innerHTML = icon(shown ? 'eye' : 'eye-off'); $('visibility').setAttribute('aria-label', shown ? 'Hide original artwork' : 'Show original artwork'); createIcons({ icons }); }
 $('visibility').onclick = () => { if (!current) return; shown = !shown; current.overlay.setOpacity(shown ? 1 : 0); updateVisibility(); dirty = true; updateSavedLabel(); };
+function updateZoomLabel() { if (current) $('zoom-level').textContent = `${Math.round(2 ** map.getZoom() * 100)}%`; }
+function actualSize() { if (current) { map.setZoom(0, { animate: false }); updateZoomLabel(); } }
 $('fit').onclick = fit; $('fit-tool').onclick = fit;
-$('actual').onclick = () => { if (current) map.setZoom(0); };
+$('actual').onclick = actualSize;
 $('zoom-in').onclick = () => map.zoomIn(.5); $('zoom-out').onclick = () => map.zoomOut(.5);
 map.on('moveend', () => { if (project && !loading) { dirty = true; updateSavedLabel(); } });
-map.on('zoomend', () => { if (current) $('zoom-level').textContent = `${Math.round(2 ** map.getZoom() * 100)}%`; });
-$('pan').onclick = () => { $('map').focus(); notify('Drag to pan. Scroll or pinch to zoom.'); };
+map.on('zoom zoomend', updateZoomLabel);
 new ResizeObserver(() => map.invalidateSize()).observe($('map'));
-document.addEventListener('keydown', e => { if (dialog.open || /INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement).tagName) || e.ctrlKey || e.metaKey || e.altKey || !current) return; if (e.key.toLowerCase() === 'f') { e.preventDefault(); fit(); } if (e.key === '1') map.setZoom(0); if (e.key === '+' || e.key === '=') map.zoomIn(.5); if (e.key === '-') map.zoomOut(.5); });
+document.addEventListener('keydown', e => { if (dialog.open || /INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement).tagName) || e.ctrlKey || e.metaKey || e.altKey || !current) return; if (e.key.toLowerCase() === 'f') { e.preventDefault(); fit(); } if (e.key === '1') actualSize(); if (e.key === '+' || e.key === '=') map.zoomIn(.5); if (e.key === '-') map.zoomOut(.5); });
 let dragDepth = 0;
 document.addEventListener('dragenter', e => { if (!e.dataTransfer?.types.includes('Files')) return; e.preventDefault(); dragDepth++; $('drop-overlay').hidden = false; });
 document.addEventListener('dragover', e => { e.preventDefault(); });
