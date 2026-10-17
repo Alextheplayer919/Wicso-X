@@ -1,0 +1,52 @@
+import { chromium } from '@playwright/test';
+import bundledChromium from '@sparticuz/chromium';
+import assert from 'node:assert/strict';
+import { mkdirSync } from 'node:fs';
+mkdirSync('test-results', {recursive:true});
+const browser = await chromium.launch({executablePath: await bundledChromium.executablePath(), args: bundledChromium.args, headless:true});
+const page = await browser.newPage({viewport:{width:1440,height:1000}});
+const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+await page.goto(process.env.TEST_URL || 'http://localhost:5173');
+await page.getByRole('heading',{name:'Start with your map'}).waitFor();
+await page.screenshot({path:'test-results/desktop.png'});
+// Generate raster fixtures with native browser encoding; no source artwork is rewritten by the app.
+const raster = await page.evaluate(async()=>{const c=document.createElement('canvas');c.width=1200;c.height=600;const x=c.getContext('2d');x.fillStyle='#547c68';x.fillRect(0,0,1200,600);return Object.fromEntries(['image/png','image/jpeg','image/webp'].map(type=>[type,c.toDataURL(type).split(',')[1]]));});
+for(const [type,data] of Object.entries(raster)) {
+  const ext=type.split('/')[1];
+  await page.locator('#file-input').setInputFiles({name:`world.${ext}`,mimeType:type,buffer:Buffer.from(data,'base64')});
+  await page.getByText('Map loaded · original artwork preserved',{exact:true}).waitFor();
+  await page.locator('#actual').click();
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator('#zoom-level').textContent(),'100%');
+  const image=page.locator('.leaflet-image-layer');
+  const before = await image.boundingBox();
+  await page.mouse.move(700,400); await page.mouse.down(); await page.mouse.move(760,450,{steps:8}); await page.mouse.up();
+  await page.waitForTimeout(500);
+  const after = await image.boundingBox(); assert.notEqual(before.x, after.x);
+  await page.keyboard.press('f');
+  await page.keyboard.press('1');
+  await page.waitForTimeout(500);
+  assert.equal(await image.evaluate(e=>e.naturalWidth/e.naturalHeight),2);
+  await page.locator('#visibility').click();
+  assert.equal(await image.evaluate(e=>e.style.opacity),'0');
+  await page.locator('#visibility').click();
+  await page.locator('#fit').click();
+  // Download is the original byte sequence.
+  const original=await page.evaluate(async()=>[...new Uint8Array(await (await fetch(document.querySelector('.leaflet-image-layer').src)).arrayBuffer())]);
+  assert.deepEqual(Buffer.from(original),Buffer.from(data,'base64'));
+  page.once('dialog',d=>d.accept());
+}
+await page.locator('#file-input').setInputFiles({name:'broken.png',mimeType:'image/png',buffer:Buffer.from('not an image')});
+await page.getByRole('alert').filter({hasText:'Could not open'}).waitFor();
+assert.equal(await page.locator('#canvas-name').textContent(),'world.webp');
+await page.locator('#file-input').setInputFiles({name:'bad.zip',mimeType:'application/zip',buffer:Buffer.from('zip')});
+await page.getByRole('alert').filter({hasText:'readable ZIP'}).waitFor();
+await page.getByRole('button',{name:'Quick guide'}).click();
+await page.locator('dialog[open]').waitFor();
+await page.locator('.dialog-done').click();
+await page.setViewportSize({width:390,height:844});
+assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),390);
+await page.screenshot({path:'test-results/mobile.png'});
+assert.deepEqual(errors,[]);
+console.log('Browser checks passed: PNG/JPEG/WebP imports, original bytes, aspect ratio, 1:1, fit, visibility, corrupt/unsupported files, guide dialog, mobile width; no page errors.');
+await browser.close();
