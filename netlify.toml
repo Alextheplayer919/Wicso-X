@@ -1,0 +1,21 @@
+# WicsoX — Netlify build configuration.
+# Stored in the repository so the site can be rebuilt identically from a fork.
+# Settings here override the same fields in the Netlify UI.
+
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  # package.json requires Node >= 22.12; "22" resolves to the latest 22.x.
+  NODE_VERSION = "22"
+
+# No redirects or rewrites are needed: WicsoX is a single static page with no
+# client-side routing. No functions, database, secrets or server files are used.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

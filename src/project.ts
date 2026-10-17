@@ -25,7 +25,7 @@ export async function sha256(blob: Blob) {
 }
 export function validateManifest(value: unknown): Manifest {
   const m = object(value, 'Manifest');
-  if (m.format !== 'wicso-project') fail('This ZIP is not a WICSO project.');
+  if (m.format !== 'wicso-project') fail('This ZIP is not a WicsoX project.');
   if (m.version !== 1) fail(`Unsupported project format version ${String(m.version)}. This release reads version 1 only; your file was not changed.`);
   for (const key of ['id', 'name', 'createdAt', 'updatedAt']) if (typeof m[key] !== 'string' || !(m[key] as string).trim() || (m[key] as string).length > 500) fail(`Invalid project ${key}.`);
   for (const key of ['createdAt', 'updatedAt']) if (!Number.isFinite(Date.parse(m[key] as string))) fail('Invalid project timestamp.');

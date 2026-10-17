@@ -1,6 +1,6 @@
 # Validation history — 17 October 2026
 
-This is a chronological record of development checkpoints, not a statement that every older limitation still applies. **The current checkpoint is v0.3.0 below.** See [PROGRESS.md](PROGRESS.md) for the consolidated current status and remaining work.
+This is a chronological record of development checkpoints, not a statement that every older limitation still applies. **The current checkpoint is v0.4.0 below.** See [PROGRESS.md](PROGRESS.md) for the consolidated current status and remaining work.
 
 ## Foundation v0.1.0
 
@@ -35,3 +35,18 @@ Not yet verified: Safari/Firefox, physical Android/iOS, pinch gestures on a real
 - Flag image contents are signature-checked on ZIP import/export; browser opening also decodes flags and enforces the 4-megapixel guard before replacing the loaded project.
 - Simulated mobile Chromium is not a substitute for physical iOS/Android testing. Safari/Firefox, physical pinch/drag ergonomics, large datasets, and Cloudflare deployment remain unverified.
 - No split/merge, multipolygon holes, nested subdivisions, military editor, infrastructure editor, full historical timeline, recovery database or APK is claimed.
+
+## Interface and hosting release v0.4.0 — 17 October 2026
+
+Scope: minimal interface rebuild, rename to WicsoX, and a hosting-target switch from Cloudflare Pages to Netlify. The project format, mapping model, import guards and archive validation were not modified, so the v0.1–v0.3 suites below are expected to keep passing and did.
+
+- **31 unit tests pass** (unchanged set; the only source change outside the interface is the user-facing "not a WicsoX project" message, with its assertion updated to match). The on-disk ZIP format string `wicso-project` was deliberately left alone.
+- Production build passes: about 363 kB JS / 131 kB gzip, about 29 kB CSS / 10 kB gzip.
+- `tests/browser.mjs`, `tests/portability.mjs` and `tests/mapping.mjs` all pass against the production preview with the new interface, each run repeatedly to check for timing flakes.
+- Fixed a flake this surfaced: the **1:1** button used an animated `setZoom`, so the zoom readout lagged the click by roughly 500 ms. It now applies the zoom with `{ animate: false }` and refreshes the label synchronously, and the readout is updated from `map.on('zoom zoomend')` rather than `zoomend` alone.
+- Fixed a layout bug found during the audit: `#app` was not a flex child, so the shell collapsed to the height of the rail instead of filling the viewport.
+- Layout audit (headless Chromium, 1440×900 / 1024×700 / 390×844, loaded and tracing states): no horizontal overflow (document scroll width equals viewport width at 390 px), no overlap between the details card, zoom controls and territory editing bar, and every floating control stays inside the canvas.
+- Contrast audit in both themes by measuring computed colours against resolved backgrounds: all sampled text is ≥ 4.5:1. This required lightening the dark-theme faint token and darkening the light-theme muted/faint tokens.
+- Theme switch verified: toggling flips `data-theme`, repaints body/panel colours, persists to `localStorage`, and survives a reload.
+
+Not verified by this checkpoint: Firefox and Safari rendering of the new shell, physical iOS/Android touch ergonomics, screen-reader behaviour, an actual Netlify deployment, and custom-domain/DNS propagation. The interface was measured in Chromium only.

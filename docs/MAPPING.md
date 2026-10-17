@@ -3,11 +3,11 @@
 ## Workflow
 
 1. Import artwork or open a project ZIP.
-2. Click **Countries & regions** (also available in the map toolbar on mobile). Add a country: name, political color, optional raster flag, editable dossier fields and custom text fields.
+2. Click the flag icon in the left rail (**Countries & regions**), or **Countries & regions** in the territory bar. Add a country: name, political color, optional raster flag, editable dossier fields and custom text fields.
 3. Click **Trace territory**. Click/tap vertices inside the artwork, then **Finish trace**. Name the region, assign a country and optional occupying country, set controlled/contested/occupied status, and save.
 4. Click a territory on the map to select it and open its record. **Country dossier** opens its assigned country's profile. The records list also selects/fits regions, including territories hidden by the layer toggle.
 5. **Edit boundary** displays draggable vertices. Click a numbered vertex to select it for removal, or click a + midpoint to insert a new vertex. Finish saves, Cancel/Escape leaves the previous boundary intact. Tracing supports up to 500 vertices per simple polygon. Zoom/pan to place points precisely; arbitrary geographic projections are not used.
-6. **Undo/redo** (toolbar or Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) restores mapping edits, including flag assets, in this session. The most recent 50 mapping revisions are kept. Map pan/zoom and general project notes are not part of mapping undo.
+6. **Undo/redo** (territory bar or Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) restores mapping edits, including flag assets, in this session. The most recent 50 mapping revisions are kept. Map pan/zoom and general project notes are not part of mapping undo.
 7. **Save ZIP** to retain countries, flags, territory geometry, layer visibility and ownership-change records. Open in a fresh session to restore. Flags and map source files are not recompressed.
 
 Unsaved boundary drafts must be finished or cancelled before exporting/replacing the project. Closing a modified record prompts before discarding its fields. Deletions require confirmation; country deletion is blocked while a territory owns/occupies a reference to it. Orphaned flag assets are retained intentionally (no automatic asset deletion). Ownership transfers append dated records; undo removes the undone transfer from the current editing branch, as expected. This is not yet a full immutable historical timeline.
