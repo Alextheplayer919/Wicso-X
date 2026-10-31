@@ -64,7 +64,7 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('Invalid layer record.');
     const layer = raw as Record<string, unknown>;
     const layerId = layer.id;
-    if (typeof layerId !== 'string' || !idPattern.test(layerId) || ids.has(layerId)) fail('Layer IDs must be valid and unique.');
+    if (typeof layerId !== 'string' || !idPattern.test(layerId) || ids.has(layerId)) throw new Error('Layer IDs must be valid and unique.');
     ids.add(layerId);
     if (typeof layer.name !== 'string' || !layer.name.trim() || layer.name.length > 120) fail('Layer names must contain 1–120 characters.');
     const kinds: LayerKind[] = ['source-image', 'paint', 'vector', 'operations', 'infrastructure', 'geographic-reference'];
@@ -74,7 +74,7 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
     if (['source-image', 'paint', 'geographic-reference'].includes(String(layer.kind))) {
       if (layer.assetPath === undefined && layer.kind === 'paint') continue;
       const assetPath = layer.assetPath;
-      if (typeof assetPath !== 'string' || !assetPattern.test(assetPath) || assetPath.split('/').some(p => p === '..' || p === '.')) fail('Raster layer asset path is invalid.');
+      if (typeof assetPath !== 'string' || !assetPattern.test(assetPath) || assetPath.split('/').some(p => p === '..' || p === '.')) throw new Error('Raster layer asset path is invalid.');
       if (project && !project.extras.has(assetPath) && assetPath !== project.manifest.artwork.path) fail('Raster layer asset is missing from the project.');
     }
   }
