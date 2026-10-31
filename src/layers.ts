@@ -13,7 +13,8 @@ export interface LayerBase extends JsonObject {
 }
 export interface RasterLayer extends LayerBase {
   kind: 'source-image' | 'paint' | 'geographic-reference';
-  assetPath: string;
+  /** A paint layer may have no asset until its first stroke is committed. */
+  assetPath?: string;
 }
 export interface VectorLayer extends LayerBase {
   kind: 'vector' | 'operations' | 'infrastructure';
@@ -30,7 +31,7 @@ const fail = (message: string): never => { throw new Error(message); };
 const idPattern = /^[a-zA-Z0-9_-]{1,100}$/;
 const assetPattern = /^(artwork|layers)\/[a-zA-Z0-9_./-]+\.(png|jpe?g|webp)$/i;
 
-/** Create the non-destructive default stack for an imported image document. */
+/** Create a non-destructive default stack for an imported image document. */
 export function createInitialLayerStack(sourceAssetPath: string): LayerStack {
   if (!assetPattern.test(sourceAssetPath) || sourceAssetPath.split('/').some(p => p === '..' || p === '.')) {
     return fail('The source image path is invalid.');
@@ -41,7 +42,7 @@ export function createInitialLayerStack(sourceAssetPath: string): LayerStack {
     activeLayerId: 'paint-1',
     layers: [
       { id: 'source-image', name: 'Original artwork', kind: 'source-image', assetPath: sourceAssetPath, visible: true, locked: true, opacity: 1 },
-      { id: 'paint-1', name: 'Paint layer 1', kind: 'paint', assetPath: 'layers/paint-1.png', visible: true, locked: false, opacity: 1 },
+      { id: 'paint-1', name: 'Paint layer 1', kind: 'paint', visible: true, locked: false, opacity: 1 },
       { id: 'countries', name: 'Countries & borders', kind: 'vector', visible: true, locked: false, opacity: 1 },
       { id: 'operations', name: 'Operations', kind: 'operations', visible: true, locked: false, opacity: 1 },
       { id: 'infrastructure', name: 'Infrastructure', kind: 'infrastructure', visible: true, locked: false, opacity: 1 },
@@ -67,6 +68,7 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
     if (typeof layer.visible !== 'boolean' || typeof layer.locked !== 'boolean' || typeof layer.opacity !== 'number' || !Number.isFinite(layer.opacity) || layer.opacity < 0 || layer.opacity > 1) fail('Invalid layer visibility, lock or opacity.');
     if (layer.kind === 'source-image') sourceCount++;
     if (['source-image', 'paint', 'geographic-reference'].includes(String(layer.kind))) {
+      if (layer.assetPath === undefined && layer.kind === 'paint') continue;
       if (typeof layer.assetPath !== 'string' || !assetPattern.test(layer.assetPath) || layer.assetPath.split('/').some(p => p === '..' || p === '.')) fail('Raster layer asset path is invalid.');
       if (project && !project.extras.has(layer.assetPath) && layer.assetPath !== project.manifest.artwork.path) fail('Raster layer asset is missing from the project.');
     }
