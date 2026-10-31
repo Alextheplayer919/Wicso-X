@@ -50,3 +50,8 @@ Scope: minimal interface rebuild, rename to WicsoX, and a hosting-target switch 
 - Theme switch verified: toggling flips `data-theme`, repaints body/panel colours, persists to `localStorage`, and survives a reload.
 
 Not verified by this checkpoint: Firefox and Safari rendering of the new shell, physical iOS/Android touch ergonomics, screen-reader behaviour, an actual Netlify deployment, and custom-domain/DNS propagation. The interface was measured in Chromium only.
+
+
+## Hosting target update
+
+The earlier testing notes refer to the previous Netlify target and do not indicate a live deployment. Cloudflare Pages is now the selected host. No Cloudflare account connection or live Pages deployment has been performed. See [DEPLOYMENT.md](DEPLOYMENT.md) for the current setup.

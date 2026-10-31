@@ -1,62 +1,51 @@
-# Netlify deployment
+# Cloudflare Pages deployment
 
-Local prerequisites: Node 22.12 or newer, npm. `npm ci`, `npm test`, `npm run build`. Output is `dist`.
+WicsoX is a static Vite + TypeScript application. Cloudflare Pages builds the site from GitHub and publishes Vite's `dist/` directory. No Workers runtime, database, server-side functions or secrets are required for the current app.
 
-## Repository configuration (already committed)
+## Build settings
 
-`netlify.toml` in the repository root pins the build so a fork rebuilds identically:
+In the Cloudflare dashboard:
 
-```toml
-[build]
-  command = "npm ci && npm run build"
-  publish = "dist"
+1. Open **Workers & Pages → Create application → Pages → Connect to Git**.
+2. Select `Alextheplayer919/Wicso-X`.
+3. Use `main` as the production branch once the rewrite is reviewed and merged. Until then, use feature-branch preview deployments.
+4. Configure:
 
-[build.environment]
-  NODE_VERSION = "22"
-```
+| Setting | Value |
+|---|---|
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | `/` (repository root) |
+| Node.js version | `22.12.0` |
 
-Netlify reads this file automatically; settings here override the same fields in the Netlify UI. `npm ci` (rather than `npm install`) installs exactly what `package-lock.json` records. Response headers are declared in the same file, so there is no separate `_headers` file to keep in sync.
+Set `NODE_VERSION=22.12.0` in the Pages project's environment variables for production and preview builds. The repository's `.node-version` file records the same version. The project uses npm and commits its lockfile; if the build environment does not install dependencies automatically, use `npm ci && npm run build`.
 
-## Connect the repository
+## Preview and production deployments
 
-1. In the Netlify dashboard choose **Add new project → Import an existing project**, then pick GitHub and authorize Netlify for `Alextheplayer919/Wicso-X` [1](https://docs.netlify.com/start/quickstarts/deploy-from-repository/).
-2. Netlify auto-detects Vite and pre-fills the build command and publish directory; `netlify.toml` already supplies them. Confirm **Build command** `npm ci && npm run build` and **Publish directory** `dist`. Base directory stays empty (repository root) [2](https://docs.netlify.com/build/configure-builds/overview/).
-3. Production branch: `main`. Enable Deploy Previews for branches and pull requests — they are free on every credit-based plan [3](https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/how-credits-work/).
-4. Save and deploy. Check the deploy log, open the deployment, import a PNG/JPEG, test fit and 1:1, then refresh and confirm no broken assets.
-5. Push a reviewed change to `main` and verify a new production deploy with the new commit SHA. Push a branch change and verify its separate Deploy Preview URL.
+- Production branch: `main` after the rewrite is ready.
+- Use Pages preview deployments for feature branches and pull requests.
+- Do not merge `rewrite/hybrid-editor` until TypeScript build, unit tests, browser tests and a real-device check pass.
+- A GitHub commit is not proof of a successful Pages deployment. Verify the deployment status and open its URL.
 
-## Custom domains
+## Headers
 
-Netlify assigns a default `<site>.netlify.app` address at first deploy; it is not the only option. To use your own name:
+The repository's `public/_headers` file is copied by Vite into `dist/_headers`. Cloudflare Pages applies these static response headers. Keep this file conservative; do not add a restrictive Content-Security-Policy until Leaflet assets, icons, inline styles and future external resources have been audited.
 
-1. Open the project, then **Domain management → Add a domain**.
-2. Choose **Add a domain you already own**, or **Buy a new domain** to register one through Netlify [1](https://docs.netlify.com/start/quickstarts/deploy-from-repository/).
-3. Point DNS at Netlify, either with **Netlify DNS** (recommended: automatic wildcard SSL renewal, automatic deploy subdomains, and no apex-domain performance penalty) or, if you keep an external DNS provider, a CNAME for `www` and an A/ALIAS record for the apex domain. With external DNS, Netlify recommends making `www` the primary domain [4](https://docs.netlify.com/manage/domains/get-started-with-domains/).
-4. Netlify provisions the HTTPS certificate automatically; allow time for DNS propagation.
+## Custom domain
 
-Custom domains with SSL are included on the Free plan. No paid add-on is required to stop using the `netlify.app` address.
+After the first successful deployment, open the Pages project, go to **Custom domains**, choose **Set up a custom domain**, and follow the DNS instructions. HTTPS is provisioned through Cloudflare after domain activation. A custom domain is optional; the generated `*.pages.dev` address works without buying one.
 
-## Plan limits to be aware of
+## Pre-release checklist
 
-Credit-based Free accounts include **300 credits/month with a hard limit** — once the balance is exhausted, Netlify serves a "Site not available" page until the next cycle; there is no automatic top-up on Free [3](https://docs.netlify.com/manage/accounts-and-billing/billing/billing-for-credit-based-plans/how-credits-work/). Draw-down rates:
+- [ ] Cloudflare Pages is connected to the intended GitHub repository.
+- [ ] Production branch is set to `main` only after the rewrite is ready.
+- [ ] Node.js is `22.12.0`.
+- [ ] Build command is `npm run build` and output directory is `dist`.
+- [ ] Build completes and Pages marks the deployment successful.
+- [ ] Import PNG, JPG/JPEG and WebP on desktop and a real Android device.
+- [ ] Test pan, zoom, save/open ZIP, and territory editing.
+- [ ] Check browser console and static asset loading.
+- [ ] Confirm preview deployments do not replace production.
 
-| Usage | Credits |
-| --- | --- |
-| Production deploy | 15 each |
-| Bandwidth | 20 per GB |
-| Web requests | 2 per 10,000 |
-| Compute (functions, Preview servers, Agent Runners) | 10 per GB-hour |
-| Deploy Previews and branch deploys | 0 |
-
-Build minutes are no longer metered separately; they are covered by the 15-credit production deploy. Failed deploys and rolling back to a previous production deploy cost nothing. A static site like WicsoX spends almost all of its budget on production deploys and bandwidth: roughly 20 production deploys, or about 15 GB of traffic, per month before the hard limit.
-
-## Verify before calling it deployed
-
-- [ ] Deploy log shows `npm ci && npm run build` on Node 22 and a successful `dist` publish.
-- [ ] Opening the production URL loads the app with no console errors.
-- [ ] Importing a PNG/JPEG/WebP works and the original can be downloaded unchanged.
-- [ ] A custom domain resolves and shows a valid certificate (if configured).
-- [ ] A push to `main` produces a new production deploy with the expected commit SHA.
-- [ ] A branch push produces a separate Deploy Preview URL.
-
-**Status:** the production build is tested locally (`npm run build`, `npm run preview`) and the configuration above is committed. Netlify account authorization and the actual Git integration have NOT been performed by this implementation. A local preview is not a Netlify deployment. GitHub source archives are not user project archives.
+**Current status:** Cloudflare Pages is the chosen deployment target. The Cloudflare account has not been connected and no live Pages deployment has been performed.

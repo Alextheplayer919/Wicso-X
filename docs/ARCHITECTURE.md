@@ -52,3 +52,8 @@ The layout is a single flex column (`#app` → top bar, shell, footer) with the 
 
 ## Future Android packaging
 Reuse dist with Capacitor webDir=dist; isolate import/export behind a file-service adapter. System picker/Storage Access Framework required for user-owned archives; do not assume broad filesystem permissions work on Android 11+. Test WebView blob downloads or replace with native save/share adapter. App-private recovery is not portable storage. Android Studio/JDK/SDK and a privately stored release keystore are needed for signed APK builds; never commit signing keys. Distribute signed versioned APKs and release notes via GitHub Releases after device tests. No native shell is shipped yet.
+
+
+## Hosting decision update
+
+The earlier Netlify deployment research below is historical and superseded. The current hosting target is **Cloudflare Pages**. See [DEPLOYMENT.md](DEPLOYMENT.md) for the authoritative build settings, Git integration, preview workflow and headers configuration. The Netlify configuration file has been removed from the active rewrite branch.

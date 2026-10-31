@@ -259,3 +259,30 @@ dialog textarea { resize: vertical; min-height: 58px }
   .brand-name { display: none }
   #canvas-name { display: none }
 }
+
+
+/* ---- non-destructive layer panel ---- */
+.layer-panel {
+  position:absolute; z-index:650; top:12px; left:12px; width:min(310px,calc(100% - 24px));
+  max-height:calc(100% - 24px); overflow:auto; padding:12px;
+  background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+}
+.layer-panel-head { display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:13px }
+.layer-panel-head button { width:32px; height:32px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); color:var(--text); font-size:20px }
+.layer-panel-hint,.layer-empty { margin:6px 0 10px; color:var(--muted); font-size:11px }
+.layer-list { display:grid; gap:5px }
+.layer-row { display:flex; align-items:center; gap:3px; min-height:42px; padding:3px; border:1px solid var(--line); border-radius:9px; background:var(--panel-2) }
+.layer-row.active { border-color:var(--accent); background:var(--accent-soft) }
+.layer-row button { display:grid; place-items:center; min-width:32px; min-height:34px; padding:3px; border:0; border-radius:6px; background:transparent; color:var(--muted); font:inherit }
+.layer-row button:hover { background:var(--line); color:var(--text) }
+.layer-row .layer-select { display:flex; justify-content:flex-start; flex:1; min-width:0; gap:8px; text-align:left; padding:4px 7px }
+.layer-kind { width:20px; text-align:center; color:var(--accent); font-size:16px }
+.layer-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font-size:11.5px }
+.layer-panel-actions { display:flex; gap:7px; margin-top:10px }
+.layer-panel-actions button { flex:1; min-height:40px; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); color:var(--text); font:inherit; font-size:11px }
+.layer-panel-actions button:hover { border-color:var(--accent) }
+@media (max-width:760px) {
+  .layer-panel { top:8px; left:8px; width:min(320px,calc(100% - 16px)); max-height:calc(100% - 72px) }
+  .layer-row button { min-width:36px; min-height:38px }
+  .layer-panel-actions button { min-height:44px }
+}

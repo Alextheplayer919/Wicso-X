@@ -1,8 +1,9 @@
 import L from 'leaflet';
 import { MappingEditor } from './editor';
+import { LayerPanel } from './layer-panel';
 import { getMapping } from './entities';
-import { createIcons, ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon } from 'lucide';
-const icons = { ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon };
+import { createIcons, ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon, Layers } from 'lucide';
+const icons = { ImagePlus, FolderOpen, Package, CircleHelp, Flag, Scan, Eye, EyeOff, Map, Upload, Download, Minus, Plus, X, ArrowUpRight, Sun, Moon, Layers };
 import 'leaflet/dist/leaflet.css';
 import './style.css';
 import { validateFile, validateDimensions, validateRaster } from './image';
@@ -31,6 +32,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     <span class="rail-divider"></span>
     <button id="visibility" class="rail-button" aria-label="Hide original artwork" title="Toggle artwork" disabled>${icon('eye')}</button>
     <button id="countries" class="rail-button" aria-label="Countries & regions" title="Countries & regions" disabled>${icon('flag')}</button>
+    <button id="layers-toggle" class="rail-button" aria-label="Layers" title="Layers" disabled>${icon('layers')}</button>
     <span class="rail-spacer"></span>
     <a class="rail-button" href="https://github.com/Alextheplayer919/Wicso-X" target="_blank" rel="noopener" aria-label="View project on GitHub" title="GitHub">${icon('arrow-up-right')}</a>
   </nav>
@@ -47,6 +49,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       </div>
       <button id="open-welcome" class="link">Open a project ZIP</button>
     </section>
+    <aside class="layer-panel" id="layer-panel" hidden aria-label="Layer panel"></aside>
     <aside class="info-card" id="map-info" hidden>
       <div id="details-empty"><h3>No map loaded</h3><p>Import artwork to see its details.</p></div>
       <div id="details-loaded">
@@ -76,7 +79,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <span class="footer-left"><i class="status-dot"></i><span id="status" role="status">Ready to import your map</span><b>·</b><span id="canvas-name">No map loaded</span></span>
   <span class="footer-right"><span class="hints">Drag to pan <b>·</b> Scroll to zoom <b>·</b> <kbd>F</kbd> fit</span><button id="milestones" class="link">Roadmap</button><span class="footer-version">v0.4.0</span></span>
 </footer>
-<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSOX</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it</button></dialog><div id="toast" role="alert" hidden></div>`;
+<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.jfif,.pjpeg,.pjp,.webp,image/png,image/jpeg,image/webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSOX</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it</button></dialog><div id="toast" role="alert" hidden></div>`;
 createIcons({ icons });
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const store = { get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } } };
@@ -96,6 +99,8 @@ let dirty = false;
 let loading = false;
 let shown = true;
 const editor = new MappingEditor(map, () => project, () => { dirty = true; updateSavedLabel(); }, () => loading);
+const layerPanel = new LayerPanel($('layer-panel'), stack => { if (project) { project.world.editorLayerStack = stack; dirty = true; updateSavedLabel(); } });
+$('layers-toggle').onclick = () => layerPanel.toggle();
 const dialog = $('dialog') as HTMLDialogElement;
 function info(title: string, body: string) { $('dialog-title').textContent = title; $('dialog-body').innerHTML = body; if (!dialog.open) dialog.showModal(); }
 $('guide').onclick = () => info('WicsoX in one minute', '<p>Import a PNG, JPEG, or WebP you created elsewhere. Drag with your mouse or one finger to pan; scroll or pinch to zoom.</p><p>The left rail holds import, fit, artwork visibility and <b>Countries &amp; regions</b>. Use <b>F</b> to fit the map, <b>1</b> for original scale, and <b>+</b> / <b>−</b> to zoom.</p><p>Use <b>Save</b> to download a complete portable project ZIP; <b>Open</b> restores artwork, name, notes, visibility and view. Browser memory is temporary, not an autosave: before replacing a loaded project a backup ZIP is downloaded. <b>Trace territory</b> places at least three points, then <b>Finish trace</b>; <b>Edit boundary</b> lets you drag, insert or remove vertices. Undo/redo covers mapping edits in this session.</p>');
@@ -136,6 +141,7 @@ async function showProject(next: Project, file: File, url: string, width: number
   if (current) { current.overlay.remove(); URL.revokeObjectURL(current.url); }
   current = { file, url, width, height, bounds, overlay }; project = next;
   shown = (next.world.layers as JsonObject | undefined)?.artwork !== false;
+  layerPanel.setForImage(next.manifest.artwork.path, next.world.editorLayerStack);
   overlay.setOpacity(shown ? 1 : 0);
   $('welcome').hidden = true; $('map-info').hidden = false; $('details-empty').hidden = true; $('details-loaded').hidden = false;
   $('project-title').textContent = next.manifest.name;
@@ -144,7 +150,7 @@ async function showProject(next: Project, file: File, url: string, width: number
   $('detail-size').textContent = `${width.toLocaleString()} × ${height.toLocaleString()} px`;
   $('detail-bytes').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
   $('detail-format').textContent = file.name.split('.').pop()!.toUpperCase();
-  for (const id of ['visibility','fit','fit-tool','actual','zoom-in','zoom-out','save-project','edit-project']) ($(id) as HTMLButtonElement).disabled = false;
+  for (const id of ['visibility','fit','fit-tool','actual','zoom-in','zoom-out','save-project','edit-project','layers-toggle']) ($(id) as HTMLButtonElement).disabled = false;
   updateVisibility();
   const view = next.world.view as { center: [number, number]; zoom: number } | undefined;
   if (view) map.setView(view.center, view.zoom, { animate: false }); else fit();

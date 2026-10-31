@@ -4,7 +4,7 @@ Updated: **17 October 2026**. Current package: **v0.4.0**.
 
 This document is the implementation handoff for the second pull request. The application is a working, local-first image mapping editor, **not the complete WicsoX specification**. Package version numbers label development increments; they do not imply a published GitHub Release or a deployed website.
 
-**What this increment changed:** the interface was rebuilt as a minimal shell (top bar, slim tool rail, full-bleed canvas, footer) with dark/light themes; the app was renamed to **WicsoX**; and the documented host moved from Cloudflare Pages to **Netlify**. No project-format, mapping, import or archive behaviour changed, so every earlier ZIP still opens.
+**What this increment changed:** the interface was rebuilt as a minimal shell (top bar, slim tool rail, full-bleed canvas, footer) with dark/light themes; the app was renamed to **WicsoX**; and the historical hosting target moved from Cloudflare Pages to **Netlify** before the later decision to return to Cloudflare Pages. No project-format, mapping, import or archive behaviour changed, so every earlier ZIP still opens.
 
 ## Executive summary
 
@@ -33,7 +33,7 @@ Milestones 1–3 were already implemented before this increment and are unchange
 | 4. War mapping | Not implemented | Navigation is a roadmap placeholder, not an editor. |
 | 5. Infrastructure | Not implemented | Navigation is a roadmap placeholder, not an editor. |
 | 6. History and reliability | Partial | Session mapping undo/redo, ownership-transfer records, replacement backup requests and archive checks exist. Full snapshots, comparison/restore, recovery, migration coverage and broader testing remain. |
-| 7. Deployment and mobile | Documented/planned; not deployed | Static production build works and simulated mobile Chromium is covered. Hosting target switched to Netlify in v0.4.0 with a committed `netlify.toml`; Netlify Git integration, custom-domain setup and plan limits are documented. No actual Netlify account connection, verified Git deployment, native Android project, signed APK or GitHub Release has been created. |
+| 7. Deployment and mobile | Documented/planned; not deployed | Static production build works and simulated mobile Chromium is covered. Cloudflare Pages is now the selected host. The rewrite branch contains a Pages deployment guide, `public/_headers`, and `.node-version`. No Cloudflare account connection or verified Pages deployment, native Android project, signed APK or GitHub Release has been created. |
 
 ## Implemented features
 
@@ -72,7 +72,7 @@ Milestones 1–3 were already implemented before this increment and are unchange
 - Dark and light themes from one set of CSS custom properties on `:root[data-theme]`; the choice is stored in `localStorage` and falls back to `prefers-color-scheme`. A tiny inline script in `index.html` applies the stored theme before first paint.
 - All text meets WCAG AA (≥ 4.5:1) in both themes; verified by measuring computed colours against resolved backgrounds at 1440×900.
 - Every control keeps its previous id and behaviour, so existing browser suites still pass unchanged.
-- Host configuration lives in `netlify.toml` (build command `npm ci && npm run build`, publish `dist`, `NODE_VERSION = 22`, response headers). `public/_headers` was removed in favour of the single reviewed file.
+- Host configuration for Cloudflare Pages uses build command `npm run build`, output `dist`, Node.js `22.12.0`, and `public/_headers` copied into the build output. The obsolete `netlify.toml` has been removed.
 
 ### Country dossiers
 
@@ -91,8 +91,8 @@ Milestones 1–3 were already implemented before this increment and are unchange
 - Make browser-test provisioning portable for contributors/CI. Current scripts use npm-distributed Chromium and require system NSS/NSPR libraries; this sandbox needed a temporary library extraction (see TESTING.md).
 - Test Firefox and Safari, physical Android/iOS, keyboard-only editing and screen-reader behavior. Existing mobile coverage is simulated Chromium, not a physical-device certification. The redesigned shell has only been measured in Chromium: verify the rail, floating cards and theme switch in other engines and with real touch input.
 - Stress-test real large maps/archives, many entities, complex polygons and constrained mobile memory. Consider image-header probing before decode, worker processing and tiled display if measurements justify them.
-- Connect the repository to Netlify using the documented Git integration in [DEPLOYMENT.md](DEPLOYMENT.md). Verify the production build, correct deployed commit, automatic deployment after a reviewed `main`-branch change, and a separate Deploy Preview URL for a branch. A local preview is not a Netlify deployment.
-- Add a custom domain if wanted: **Domain management → Add a domain**, then either Netlify DNS or external DNS records. Netlify provisions the certificate; confirm HTTPS after propagation.
+- Connect the repository to Cloudflare Pages using the Git integration in [DEPLOYMENT.md](DEPLOYMENT.md). Verify the production build, correct deployed commit, automatic deployment after a reviewed `main`-branch change, and a separate preview URL for a branch. A local preview is not a Pages deployment.
+- Add a custom domain through the Pages project's **Custom domains** settings and follow Cloudflare's DNS and HTTPS activation steps.
 - Re-check the credit budget if the site gets real traffic: 300 credits/month on Free, 15 per production deploy, 20 per GB of bandwidth, with a hard limit and no top-up on Free.
 - Review download/backup behavior where browsers restrict multiple automatic downloads; users must still check downloads and retain source archives.
 
@@ -154,12 +154,12 @@ Current automated results are recorded in [TESTING.md](TESTING.md). At this hand
 - `npm run test:mapping`: tracing, map selection, country/flag/custom-field editing, rename/reference stability, vertex correction/insertion/removal, undo/redo, ownership history, visibility, fresh-session ZIP restoration and mobile interactions.
 - Dependency audit reported zero known vulnerabilities when last run; this is not a security certification.
 
-Browser suites require a running site and a suitable Chromium environment. There are no automatic GitHub checks yet. Do not equate local success with verified Netlify deployment, full cross-browser support or completion of the entire specification.
+Browser suites require a running site and a suitable Chromium environment. There are no automatic GitHub checks yet. Do not equate local success with verified Cloudflare Pages deployment, full cross-browser support or completion of the entire specification.
 
 ## Architecture and compatibility handoff
 
 - Node **22.12+**, npm, Vite, strict TypeScript, Leaflet CRS.Simple, zip.js, locally bundled Lucide icons.
-- `npm run build` → `dist`. Production branch intended for Netlify: `main`. Build settings and response headers live in `netlify.toml`, which overrides the Netlify UI.
+- `npm run build` → `dist`. Production branch intended for Cloudflare Pages: `main`. Build settings are configured in the Pages dashboard; response headers live in `public/_headers`.
 - Interface styling is plain CSS with theme tokens (no CSS framework): `src/style.css` holds every token and component rule; `src/main.ts` owns the markup and wiring.
 - Additive supported editor schema: `world.mapping.version = 1`; geometry uses top-left image-pixel coordinates. Legacy root collections remain opaque. See [MAPPING.md](MAPPING.md) and [PROJECT_FORMAT.md](PROJECT_FORMAT.md).
 - Keep artwork immutable and preserve unknown compatible data. No mandatory backend/account/cloud storage should be introduced without a justified requirement.
@@ -171,4 +171,4 @@ Browser suites require a running site and a suitable Chromium environment. There
 - [ZIP contract and archive limits](PROJECT_FORMAT.md)
 - [Mapping workflow, schema and current limits](MAPPING.md)
 - [Validation history and unverified areas](TESTING.md)
-- [Netlify setup, custom domains and deployment verification](DEPLOYMENT.md)
+- [Cloudflare Pages setup, custom domains and deployment verification](DEPLOYMENT.md)

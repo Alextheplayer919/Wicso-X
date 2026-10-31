@@ -11,9 +11,11 @@ npm ci
 npm run dev
 ```
 
-Open the displayed URL. Choose **Import** or drop one PNG/JPEG/WebP file. Drag to pan, scroll or pinch to zoom, press **F** to fit or **1** for 1:1 scale. Original artwork is locked, preserved byte-for-byte, and downloadable from the details card. Use the project name in the top bar to rename your world and add notes. **Save** downloads a portable archive; **Open** restores a ZIP. Replacing a loaded project requires confirmation and requests a backup ZIP first; invalid imports leave the previous project intact.
+Open the displayed URL. Choose **Import** or drop a PNG, JPEG/JPG, or WebP image. PNG and JPEG are both first-class inputs; `.jpg`, `.jpeg`, `.jfif`, `.pjpeg` and `.pjp` are recognised as JPEG variants. The imported source bytes are preserved unchanged. Drag to pan, scroll or pinch to zoom, press **F** to fit or **1** for 1:1 scale. Original artwork is locked, preserved byte-for-byte, and downloadable from the details card. Use the project name in the top bar to rename your world and add notes. **Save** downloads a portable archive; **Open** restores a ZIP. Replacing a loaded project requires confirmation and requests a backup ZIP first; invalid imports leave the previous project intact.
 
 **Browser sessions are in memory only. Download a ZIP to keep your work and check your downloads.** There is no autosave, split/merge, PSD import or Android APK yet. Territory tracing, vertex editing, country dossiers and flags are available. War and infrastructure controls are roadmap placeholders. Maps are not uploaded. No accounts, backend, remote tiles, paid API or AI.
+
+See [image and map-file format policy](docs/IMAGE_FORMATS.md) for the supported formats, export rules, layered-art plans and geographic-data roadmap.
 
 ## Interface
 
@@ -45,10 +47,10 @@ npm run preview
 Start with the [progress report and prioritized remaining work](docs/PROGRESS.md) for the current implementation status, testing evidence, limitations, and deployment/mobile handoff.
 
 - [Research, architecture, proposed ZIP format and milestones](docs/ARCHITECTURE.md)
-- [Netlify Git integration, custom domains and plan limits](docs/DEPLOYMENT.md)
+- [Cloudflare Pages deployment and configuration](docs/DEPLOYMENT.md)
 - [Implemented ZIP format and safety limits](docs/PROJECT_FORMAT.md)
 - [Test results and remaining limitations](docs/TESTING.md)
 
 Static Vite/TypeScript + Leaflet CRS.Simple; no geographic assumptions. Initial import guards: 100 MiB compressed size, 64 megapixels, 16,384 pixels per edge. Very large images may still exceed device memory during decoding. Source artwork is never resized or recompressed.
 
-Netlify is the intended host: build `npm ci && npm run build`, publish `dist`, production branch `main`, configuration in `netlify.toml`. The actual account connection and deployment have not been performed. Future Android packaging will reuse this web build and portable project format.
+Cloudflare Pages is the intended host: build `npm run build`, publish `dist`, use Node.js `22.12.0`, and connect the GitHub repository. The actual Cloudflare account connection and deployment have not been performed. Future Android packaging will reuse this web build and portable project format.
