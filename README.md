@@ -11,11 +11,11 @@ npm ci
 npm run dev
 ```
 
-Open the displayed URL. Choose **Import** or drop one PNG/JPEG/WebP file. Drag to pan, scroll or pinch to zoom, press **F** to fit or **1** for 1:1 scale. Original artwork is locked, preserved byte-for-byte, and downloadable from the details card. Use the project name in the top bar to rename your world and add notes. **Save** downloads a portable archive; **Open** restores a ZIP. Replacing a loaded project requires confirmation and requests a backup ZIP first; invalid imports leave the previous project intact.
+Open the displayed URL. Choose **Import** or drop a PNG, JPEG/JPG, or WebP image. PNG and JPEG are both first-class inputs; `.jpg`, `.jpeg`, `.jfif`, `.pjpeg` and `.pjp` are recognised as JPEG variants. The imported source bytes are preserved unchanged. Drag to pan, scroll or pinch to zoom, press **F** to fit or **1** for 1:1 scale. Original artwork is locked, preserved byte-for-byte, and downloadable from the details card. Use the project name in the top bar to rename your world and add notes. **Save** downloads a portable archive; **Open** restores a ZIP. Replacing a loaded project requires confirmation and requests a backup ZIP first; invalid imports leave the previous project intact.
 
 **Browser sessions are in memory only. Download a ZIP to keep your work and check your downloads.** There is no autosave, split/merge, PSD import or Android APK yet. Territory tracing, vertex editing, country dossiers and flags are available. War and infrastructure controls are roadmap placeholders. Maps are not uploaded. No accounts, backend, remote tiles, paid API or AI.
 
-## Interface
+See [image and map-file format policy](docs/IMAGE_FORMATS.md) for the supported formats, export rules, layered-art plans and geographic-data roadmap.\n\n## Interface
 
 The shell is deliberately small:
 
