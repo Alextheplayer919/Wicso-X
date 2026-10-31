@@ -55,11 +55,12 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
   const stack = value as Record<string, unknown>;
   const coordinateSpace = stack.coordinateSpace;
   const rawLayers = stack.layers;
-  if (stack.version !== 1 || !['image-pixels', 'geographic'].includes(String(coordinateSpace))) fail('Unsupported layer stack version or coordinate space.');
-  if (!Array.isArray(rawLayers) || rawLayers.length < 1 || rawLayers.length > 128) fail('Layer count must be between 1 and 128.');
+  if (stack.version !== 1 || !['image-pixels', 'geographic'].includes(String(coordinateSpace))) throw new Error('Unsupported layer stack version or coordinate space.');
+  if (!Array.isArray(rawLayers) || rawLayers.length < 1 || rawLayers.length > 128) throw new Error('Layer count must be between 1 and 128.');
+  const layers = rawLayers as unknown[];
   const ids = new Set<string>();
   let sourceCount = 0;
-  for (const raw of rawLayers) {
+  for (const raw of layers) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('Invalid layer record.');
     const layer = raw as Record<string, unknown>;
     if (typeof layer.id !== 'string' || !idPattern.test(layer.id) || ids.has(layer.id)) fail('Layer IDs must be valid and unique.');
@@ -76,6 +77,7 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
     }
   }
   if (sourceCount > 1) fail('An image document can contain only one original source-image layer.');
-  if (typeof stack.activeLayerId !== 'string' || !ids.has(stack.activeLayerId)) fail('The active layer must reference an existing layer.');
+  const activeLayerId = stack.activeLayerId;
+  if (typeof activeLayerId !== 'string' || !ids.has(String(activeLayerId))) fail('The active layer must reference an existing layer.');
   if (coordinateSpace === 'geographic' && sourceCount > 0) fail('A geographic document cannot use an image-pixel source layer; place artwork as a reference layer instead.');
 }
