@@ -79,7 +79,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <span class="footer-left"><i class="status-dot"></i><span id="status" role="status">Ready to import your map</span><b>·</b><span id="canvas-name">No map loaded</span></span>
   <span class="footer-right"><span class="hints">Drag to pan <b>·</b> Scroll to zoom <b>·</b> <kbd>F</kbd> fit</span><button id="milestones" class="link">Roadmap</button><span class="footer-version">v0.4.0</span></span>
 </footer>
-<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSOX</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it</button></dialog><div id="toast" role="alert" hidden></div>`;
+<input id="project-input" type="file" accept=".zip" hidden><input id="file-input" type="file" accept=".png,.jpg,.jpeg,.jfif,.pjpeg,.pjp,.webp,image/png,image/jpeg,image/webp" hidden><dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">${icon('x')}</button><span class="eyebrow">WICSOX</span><h2 id="dialog-title"></h2><div id="dialog-body"></div><button class="button primary dialog-done">Got it</button></dialog><div id="toast" role="alert" hidden></div>`;
 createIcons({ icons });
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const store = { get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* ignore */ } } };
