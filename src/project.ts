@@ -57,9 +57,10 @@ function validateWorld(value: unknown): JsonObject {
 export async function newProject(file: File, width: number, height: number): Promise<Project> {
   const now = new Date().toISOString();
   const ext = file.name.split('.').pop()!.toLowerCase();
+  const storedExt = ['jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp'].includes(ext) ? 'jpg' : ext;
   return {
     manifest: { format: 'wicso-project', version: 1, id: crypto.randomUUID(), name: file.name.replace(/\.[^.]+$/, '') || 'Untitled world', createdAt: now, updatedAt: now,
-      artwork: { path: `artwork/original.${ext}`, name: file.name, mime: ext === 'webp' ? 'image/webp' : ext === 'png' ? 'image/png' : 'image/jpeg', width, height, sha256: await sha256(file) } },
+      artwork: { path: `artwork/original.${storedExt}`, name: file.name, mime: ext === 'webp' ? 'image/webp' : ext === 'png' ? 'image/png' : 'image/jpeg', width, height, sha256: await sha256(file) } },
     world: { notes: '', layers: { artwork: true }, countries: [], territories: [], military: [], infrastructure: { nodes: [], edges: [] }, labels: [] },
     history: { events: [], snapshots: [] }, artwork: file, extras: new Map(),
   };
