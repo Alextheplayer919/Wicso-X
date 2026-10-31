@@ -14,6 +14,18 @@ async function archive(overrides: Record<string, string | Blob>, p?: Project) {
   return w.close();
 }
 describe('portable ZIP format v1',()=>{
+  it('canonicalizes JFIF/JPEG aliases to a JPEG archive path without changing source bytes', async () => {
+    const source = new Uint8Array([255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1]);
+    const imported = new File([source], 'atlas.jfif', { type: 'image/jpeg' });
+    const p = await newProject(imported, 2, 2);
+    expect(p.manifest.artwork.path).toBe('artwork/original.jpg');
+    expect(p.manifest.artwork.name).toBe('atlas.jfif');
+    expect(p.manifest.artwork.mime).toBe('image/jpeg');
+    const reopened = await readProject(await writeProject(p));
+    expect(reopened.manifest.artwork.name).toBe('atlas.jfif');
+    expect(new Uint8Array(await reopened.artwork.arrayBuffer())).toEqual(source);
+  });
+
   it('round trips source bytes, IDs, records, geometry, history, flags and unknown extensions',async()=>{
     const p=await fixture();
     p.world = { ...p.world, notes:'World history 🗺', view:{center:[90,400],zoom:-.5},layers:{artwork:false,custom:true},countries:[{id:'country-a',name:'Renamed realm',flag:'assets/flags/a.png'}],territories:[{id:'territory-a',ownerId:'country-a',geometry:[[0,0],[10,20],[40,0]]}],military:[{id:'front-a',points:[[1,2],[3,4]]}], infrastructure:{nodes:[{id:'n1'},{id:'n2'}],edges:[{id:'e1',from:'n1',to:'n2'}]},futureField:{version:'keep me'}};
