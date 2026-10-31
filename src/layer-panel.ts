@@ -30,7 +30,7 @@ export class LayerPanel {
   private render() {
     const list = this.root.querySelector<HTMLElement>('.layer-list')!;
     if (!this.stack) { list.innerHTML = '<p class="layer-empty">Import a map to create its layer stack.</p>'; return; }
-    list.innerHTML = this.stack.layers.map((layer, index) => `
+    list.innerHTML = this.stack.layers.slice().reverse().map((layer, index) => `
       <div class="layer-row ${layer.id === this.stack!.activeLayerId ? 'active' : ''}" role="listitem" data-id="${esc(layer.id)}">
         <button type="button" class="layer-select" data-action="select" data-id="${esc(layer.id)}" aria-pressed="${layer.id === this.stack.activeLayerId}">
           <span class="layer-kind">${layer.kind === 'source-image' ? '▧' : layer.kind === 'paint' ? '◩' : layer.kind === 'vector' ? '⬡' : layer.kind === 'operations' ? '⌁' : '↗'}</span>
@@ -63,8 +63,8 @@ export class LayerPanel {
     if (action === 'select') { if (!layer.locked) this.stack.activeLayerId = layer.id; }
     if (action === 'visibility') layer.visible = !layer.visible;
     if (action === 'lock') layer.locked = !layer.locked;
-    if (action === 'up' && index > 0) [this.stack.layers[index - 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index - 1]];
-    if (action === 'down' && index < this.stack.layers.length - 1) [this.stack.layers[index + 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index + 1]];
+    if (action === 'up' && index < this.stack.layers.length - 1) [this.stack.layers[index + 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index + 1]];
+    if (action === 'down' && index > 0) [this.stack.layers[index - 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index - 1]];
     this.commit();
   }
 }
