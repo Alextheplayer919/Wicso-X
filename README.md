@@ -45,10 +45,10 @@ npm run preview
 Start with the [progress report and prioritized remaining work](docs/PROGRESS.md) for the current implementation status, testing evidence, limitations, and deployment/mobile handoff.
 
 - [Research, architecture, proposed ZIP format and milestones](docs/ARCHITECTURE.md)
-- [Netlify Git integration, custom domains and plan limits](docs/DEPLOYMENT.md)
+- [Cloudflare Pages deployment and configuration](docs/DEPLOYMENT.md)
 - [Implemented ZIP format and safety limits](docs/PROJECT_FORMAT.md)
 - [Test results and remaining limitations](docs/TESTING.md)
 
 Static Vite/TypeScript + Leaflet CRS.Simple; no geographic assumptions. Initial import guards: 100 MiB compressed size, 64 megapixels, 16,384 pixels per edge. Very large images may still exceed device memory during decoding. Source artwork is never resized or recompressed.
 
-Netlify is the intended host: build `npm ci && npm run build`, publish `dist`, production branch `main`, configuration in `netlify.toml`. The actual account connection and deployment have not been performed. Future Android packaging will reuse this web build and portable project format.
+Cloudflare Pages is the intended host: build `npm run build`, publish `dist`, use Node.js `22.12.0`, and connect the GitHub repository. The actual Cloudflare account connection and deployment have not been performed. Future Android packaging will reuse this web build and portable project format.
