@@ -63,8 +63,9 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
   for (const raw of layers) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('Invalid layer record.');
     const layer = raw as Record<string, unknown>;
-    if (typeof layer.id !== 'string' || !idPattern.test(layer.id) || ids.has(layer.id)) fail('Layer IDs must be valid and unique.');
-    ids.add(layer.id);
+    const layerId = layer.id;
+    if (typeof layerId !== 'string' || !idPattern.test(layerId) || ids.has(layerId)) fail('Layer IDs must be valid and unique.');
+    ids.add(layerId);
     if (typeof layer.name !== 'string' || !layer.name.trim() || layer.name.length > 120) fail('Layer names must contain 1–120 characters.');
     const kinds: LayerKind[] = ['source-image', 'paint', 'vector', 'operations', 'infrastructure', 'geographic-reference'];
     if (!kinds.includes(layer.kind as LayerKind)) fail('Unknown layer type.');
@@ -72,8 +73,9 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
     if (layer.kind === 'source-image') sourceCount++;
     if (['source-image', 'paint', 'geographic-reference'].includes(String(layer.kind))) {
       if (layer.assetPath === undefined && layer.kind === 'paint') continue;
-      if (typeof layer.assetPath !== 'string' || !assetPattern.test(layer.assetPath) || layer.assetPath.split('/').some(p => p === '..' || p === '.')) fail('Raster layer asset path is invalid.');
-      if (project && !project.extras.has(layer.assetPath) && layer.assetPath !== project.manifest.artwork.path) fail('Raster layer asset is missing from the project.');
+      const assetPath = layer.assetPath;
+      if (typeof assetPath !== 'string' || !assetPattern.test(assetPath) || assetPath.split('/').some(p => p === '..' || p === '.')) fail('Raster layer asset path is invalid.');
+      if (project && !project.extras.has(assetPath) && assetPath !== project.manifest.artwork.path) fail('Raster layer asset is missing from the project.');
     }
   }
   if (sourceCount > 1) fail('An image document can contain only one original source-image layer.');
