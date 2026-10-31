@@ -32,14 +32,14 @@ export class LayerPanel {
     if (!this.stack) { list.innerHTML = '<p class="layer-empty">Import a map to create its layer stack.</p>'; return; }
     list.innerHTML = this.stack.layers.slice().reverse().map((layer, index) => `
       <div class="layer-row ${layer.id === this.stack!.activeLayerId ? 'active' : ''}" role="listitem" data-id="${esc(layer.id)}">
-        <button type="button" class="layer-select" data-action="select" data-id="${esc(layer.id)}" aria-pressed="${layer.id === this.stack.activeLayerId}">
+        <button type="button" class="layer-select" data-action="select" data-id="${esc(layer.id)}" aria-pressed="${layer.id === this.stack!.activeLayerId}">
           <span class="layer-kind">${layer.kind === 'source-image' ? '▧' : layer.kind === 'paint' ? '◩' : layer.kind === 'vector' ? '⬡' : layer.kind === 'operations' ? '⌁' : '↗'}</span>
           <span class="layer-name">${esc(layer.name)}</span>
         </button>
         <button type="button" data-action="visibility" data-id="${esc(layer.id)}" aria-label="${layer.visible ? 'Hide' : 'Show'} ${esc(layer.name)}">${layer.visible ? '◉' : '○'}</button>
         <button type="button" data-action="lock" data-id="${esc(layer.id)}" aria-label="${layer.locked ? 'Unlock' : 'Lock'} ${esc(layer.name)}">${layer.locked ? '▣' : '□'}</button>
         <button type="button" data-action="up" data-id="${esc(layer.id)}" aria-label="Move ${esc(layer.name)} up" ${index === 0 ? 'disabled' : ''}>↑</button>
-        <button type="button" data-action="down" data-id="${esc(layer.id)}" aria-label="Move ${esc(layer.name)} down" ${index === this.stack.layers.length - 1 ? 'disabled' : ''}>↓</button>
+        <button type="button" data-action="down" data-id="${esc(layer.id)}" aria-label="Move ${esc(layer.name)} down" ${index === this.stack!.layers.length - 1 ? 'disabled' : ''}>↓</button>
       </div>`).join('');
   }
   private handleClick(event: Event) {
@@ -56,15 +56,15 @@ export class LayerPanel {
       const layer: EditorLayer = kind === 'paint'
         ? { id: nextId, name: 'Paint layer', kind: 'paint', visible: true, locked: false, opacity: 1 }
         : { id: nextId, name: 'Map layer', kind: 'vector', visible: true, locked: false, opacity: 1 };
-      this.stack.layers.push(layer); this.stack.activeLayerId = nextId; this.commit(); return;
+      this.stack.layers.push(layer); this.stack!.activeLayerId = nextId; this.commit(); return;
     }
     if (index < 0) return;
     const layer = this.stack.layers[index];
     if (!layer) return;
-    if (action === 'select') { if (!layer.locked) this.stack.activeLayerId = layer.id; }
+    if (action === 'select') { if (!layer.locked) this.stack!.activeLayerId = layer.id; }
     if (action === 'visibility') layer.visible = !layer.visible;
     if (action === 'lock') layer.locked = !layer.locked;
-    if (action === 'up' && index < this.stack.layers.length - 1) [this.stack.layers[index + 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index + 1]];
+    if (action === 'up' && index < this.stack!.layers.length - 1) [this.stack.layers[index + 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index + 1]];
     if (action === 'down' && index > 0) [this.stack.layers[index - 1], this.stack.layers[index]] = [this.stack.layers[index], this.stack.layers[index - 1]];
     this.commit();
   }
