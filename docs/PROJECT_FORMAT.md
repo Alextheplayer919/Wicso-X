@@ -6,7 +6,7 @@ Implemented in the v0.2.0 portability release. A self-contained ZIP, with no ser
 manifest.json
 world.json
 history.json
-artwork/original.png       # or .jpg/.jpeg/.webp, exact source bytes
+artwork/original.png       # or .jpg/.jpeg/.webp, exact source bytes; JPEG aliases use canonical .jpg
 assets/...                 # optional retained assets
 extensions/...             # optional retained opaque data
 ```
@@ -47,7 +47,7 @@ New projects also initialize `countries`, `territories`, `military`, `labels` to
 ## Validation and limits
 
 - Version must be numeric 1. Other versions are rejected before altering the workspace. This is the first published schema, so no older schema migration exists yet. Future versions must introduce explicit tested copy-on-import migrations and preserve backups; do not reinterpret version 0 as version 1.
-- Manifest format, strings, timestamps, dimensions, media type and SHA-256 are checked.
+- Manifest format, strings, timestamps, dimensions, media type and SHA-256 are checked. Imported `.jfif`, `.pjpeg` and `.pjp` JPEG filenames retain their original display name but use `artwork/original.jpg` as the canonical archive path.
 - All three JSON roots must be objects; implemented view/visibility/notes fields are validated. Root legacy entity fields remain opaque. Supported editor entities are now validated under `world.mapping`; see MAPPING.md.
 - CRC and strict ZIP structural checks; original artwork SHA-256 checked. Browser import checks raster magic bytes and decoded dimensions before committing the project.
 - Reject encrypted archives, duplicate/case-fold-colliding paths, absolute paths, control characters, backslashes, colon, empty/dot/traversal path components.
