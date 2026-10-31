@@ -60,6 +60,7 @@ export class LayerPanel {
     }
     if (index < 0) return;
     const layer = this.stack.layers[index];
+    if (!layer) return;
     if (action === 'select') { if (!layer.locked) this.stack.activeLayerId = layer.id; }
     if (action === 'visibility') layer.visible = !layer.visible;
     if (action === 'lock') layer.locked = !layer.locked;
