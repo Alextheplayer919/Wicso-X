@@ -2,7 +2,8 @@ const JPEG_EXTENSIONS = ['jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp'] as const;
 
 export function validateFile(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase() || '';
-  if (!['png', 'webp', ...JPEG_EXTENSIONS].includes(extension)) {
+  const supportedExtensions = new Set<string>(['png', 'webp', ...JPEG_EXTENSIONS]);
+  if (!supportedExtensions.has(extension)) {
     throw new Error('Choose a PNG, JPEG/JPG, or WebP image. PSD and layered project files are not supported yet.');
   }
   if (!file.size) throw new Error('This file is empty. Please choose a valid map image.');
