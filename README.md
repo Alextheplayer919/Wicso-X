@@ -15,7 +15,9 @@ Open the displayed URL. Choose **Import** or drop a PNG, JPEG/JPG, or WebP image
 
 **Browser sessions are in memory only. Download a ZIP to keep your work and check your downloads.** There is no autosave, split/merge, PSD import or Android APK yet. Territory tracing, vertex editing, country dossiers and flags are available. War and infrastructure controls are roadmap placeholders. Maps are not uploaded. No accounts, backend, remote tiles, paid API or AI.
 
-See [image and map-file format policy](docs/IMAGE_FORMATS.md) for the supported formats, export rules, layered-art plans and geographic-data roadmap.\n\n## Interface
+See [image and map-file format policy](docs/IMAGE_FORMATS.md) for the supported formats, export rules, layered-art plans and geographic-data roadmap.
+
+## Interface
 
 The shell is deliberately small:
 
