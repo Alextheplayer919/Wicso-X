@@ -53,11 +53,13 @@ export function createInitialLayerStack(sourceAssetPath: string): LayerStack {
 export function validateLayerStack(value: unknown, project?: Project): asserts value is LayerStack {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail('Layer stack must be an object.');
   const stack = value as Record<string, unknown>;
-  if (stack.version !== 1 || !['image-pixels', 'geographic'].includes(String(stack.coordinateSpace))) fail('Unsupported layer stack version or coordinate space.');
-  if (!Array.isArray(stack.layers) || stack.layers.length < 1 || stack.layers.length > 128) fail('Layer count must be between 1 and 128.');
+  const coordinateSpace = stack.coordinateSpace;
+  const rawLayers = stack.layers;
+  if (stack.version !== 1 || !['image-pixels', 'geographic'].includes(String(coordinateSpace))) fail('Unsupported layer stack version or coordinate space.');
+  if (!Array.isArray(rawLayers) || rawLayers.length < 1 || rawLayers.length > 128) fail('Layer count must be between 1 and 128.');
   const ids = new Set<string>();
   let sourceCount = 0;
-  for (const raw of stack.layers) {
+  for (const raw of rawLayers) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) fail('Invalid layer record.');
     const layer = raw as Record<string, unknown>;
     if (typeof layer.id !== 'string' || !idPattern.test(layer.id) || ids.has(layer.id)) fail('Layer IDs must be valid and unique.');
@@ -75,5 +77,5 @@ export function validateLayerStack(value: unknown, project?: Project): asserts v
   }
   if (sourceCount > 1) fail('An image document can contain only one original source-image layer.');
   if (typeof stack.activeLayerId !== 'string' || !ids.has(stack.activeLayerId)) fail('The active layer must reference an existing layer.');
-  if (stack.coordinateSpace === 'geographic' && sourceCount > 0) fail('A geographic document cannot use an image-pixel source layer; place artwork as a reference layer instead.');
+  if (coordinateSpace === 'geographic' && sourceCount > 0) fail('A geographic document cannot use an image-pixel source layer; place artwork as a reference layer instead.');
 }
